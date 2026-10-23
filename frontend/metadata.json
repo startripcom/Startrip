@@ -1,0 +1,6 @@
+{
+  "name": "StarTip",
+  "description": "Turn appreciation into instant tips on the Stellar network. One tip page, stream alerts, and website widget paid straight to your wallet.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

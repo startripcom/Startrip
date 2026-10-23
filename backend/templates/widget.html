@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Tip {{ creator.display_name }} (@{{ creator.username }}) — StarTip</title>
+  <meta name="description" content="{{ config.welcome_message|default:creator.bio|default:'Send instant non-custodial tips in XLM or USDC directly to my Stellar wallet.' }}">
+
+  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+  <meta property="og:site_name" content="StarTip">
+  <meta property="og:type" content="profile">
+  <meta property="og:url" content="https://startip.app/tip/{{ creator.username }}">
+  <meta property="og:title" content="⚡ Tip {{ creator.display_name }} (@{{ creator.username }}) — StarTip">
+  <meta property="og:description" content="{{ config.welcome_message|default:creator.bio|default:'Send instant non-custodial tips in XLM or USDC directly to my Stellar wallet.' }}">
+  <meta property="og:image" content="https://startip.app/api/og/{{ creator.username }}.png">
+  <meta property="og:image:secure_url" content="https://startip.app/api/og/{{ creator.username }}.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tip {{ creator.display_name }} on StarTip">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@StarTipApp">
+  <meta name="twitter:creator" content="@StarTipApp">
+  <meta name="twitter:title" content="⚡ Tip {{ creator.display_name }} (@{{ creator.username }}) — StarTip">
+  <meta name="twitter:description" content="{{ config.welcome_message|default:creator.bio|default:'Send instant non-custodial tips in XLM or USDC directly to my Stellar wallet.' }}">
+  <meta name="twitter:image" content="https://startip.app/api/og/{{ creator.username }}.png">
+  <meta name="theme-color" content="#070A1A">
+  
+  <!-- Figma Google Fonts: Onest, Anton, Red Hat Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Onest:wght@400;500;600;700;800&family=Red+Hat+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Stellar Wallet & Protocol SDKs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/12.3.0/stellar-sdk.min.js"></script>
+  <script src="https://unpkg.com/@albedo-link/intent/lib/albedo.intent.js"></script>
+  <script src="/static/stellar-wallets-kit.bundle.js"></script>
+
+  <style>
+    :root {
+      /* Figma Design Tokens */
+      --ink-primary: #0B1026;
+      --ink-secondary: #4A5070;
+      --ink-muted: #646A8A;
+      
+      --surface-card: #FFFFFF;
+      --surface-page: #F6F7FB;
+      --surface-track: #EEF0F7;
+      --surface-cover: #E6E0FF;
+      --border-subtle: #E4E7F2;
+      --border-strong: #C9CEE2;
+      --pattern-stroke: #C7BAFF;
+      
+      /* Lime Signature Glow Tokens */
+      --lime-primary: #C6FF3D;
+      --lime-glow: rgba(198, 255, 61, 0.45);
+      --lime-glow-strong: rgba(198, 255, 61, 0.75);
+      
+      /* Purple Brand Tokens */
+      --purple-brand: #6A4CF5;
+      --purple-dark: #4A2FC2;
+      --purple-badge-bg: #ECE8FF;
+      
+      /* Status Green */
+      --green-badge-bg: #E7F6EC;
+      --green-badge-border: #A7E3BE;
+      --green-badge-text: #15803D;
+
+      /* Elevation / e2 · floating */
+      --elevation-e2: 0px 24px 56px rgba(11, 16, 38, 0.16), 0px 2px 4px rgba(11, 16, 38, 0.06);
+    }
+
+    /* Dark Theme Support */
+    {% if config.theme == 'dark' or config.theme == 'cyber' or config.theme == 'midnight' %}
+    :root {
+      --ink-primary: #FFFFFF;
+      --ink-secondary: #A0A6C5;
+      --ink-muted: #7E85A8;
+      
+      --surface-card: #0B1026;
+      --surface-page: #060919;
+      --surface-track: #151C38;
+      --surface-cover: #1D183B;
+      --border-subtle: #1F274A;
+      --border-strong: #2D3766;
+      --pattern-stroke: #3E3577;
+
+      --elevation-e2: 0px 24px 56px rgba(0, 0, 0, 0.6), 0px 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    {% endif %}
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Onest', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--surface-page);
+      color: var(--ink-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      margin: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.in-iframe {
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: auto !important;
+      display: block !important;
+    }
+
+    /* Tipping Widget Container (Screen 5 · 358px wide · radius 28px) */
+    .widget-card {
+      width: 100%;
+      max-width: 358px;
+      margin: 0 auto;
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 28px;
+      box-shadow: var(--elevation-e2);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      transition: all 0.25s ease;
+    }
+
+    /* Cover (80px tall) */
+    .widget-cover {
+      width: 100%;
+      height: 80px;
+      background: var(--surface-cover);
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      padding: 12px 16px;
+      overflow: hidden;
+    }
+
+    .cover-pattern {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .cover-banner-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.35;
+    }
+
+    /* Badge / Status pill (28px tall, #0B1026, #C6FF3D) */
+    .status-badge {
+      box-sizing: border-box;
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0px 12px 0px 8px;
+      gap: 4px;
+      height: 28px;
+      background: #0B1026;
+      border: 1px solid #0B1026;
+      border-radius: 999px;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .status-badge-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status-badge-label {
+      font-family: 'Onest', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--lime-primary);
+      letter-spacing: 0.02em;
+    }
+
+    /* Creator Avatar (64x64, 4px surface ring, top: 48px, left: 20px) */
+    .avatar-disc {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      left: 20px;
+      top: 48px;
+      background: #0B1026;
+      border: 4px solid var(--surface-card);
+      border-radius: 999px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0px 4px 14px rgba(11, 16, 38, 0.12);
+    }
+
+    .avatar-disc img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar-initials {
+      font-family: 'Onest', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      line-height: 28px;
+      letter-spacing: -0.3px;
+      color: var(--lime-primary);
+      user-select: none;
+    }
+
+    /* Profile Section */
+    .profile-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 44px 20px 16px 20px;
+      gap: 4px;
+    }
+
+    .profile-name-row {
+      display: flex;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .profile-name {
+      font-family: 'Onest', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      line-height: 28px;
+      letter-spacing: -0.3px;
+      color: var(--ink-primary);
+    }
+
+    .profile-handle {
+      font-family: 'Onest', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-muted);
+    }
+
+    .campaign-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0px 8px;
+      height: 22px;
+      background: var(--purple-badge-bg);
+      border-radius: 6px;
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--purple-dark);
+      letter-spacing: 0.02em;
+    }
+
+    .profile-bio {
+      font-family: 'Onest', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-secondary);
+      margin-top: 2px;
+    }
+
+    .profile-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-subtle);
+      margin-top: 12px;
+    }
+
+    /* Body Form Section */
+    .body-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 16px 20px 20px 20px;
+      gap: 16px;
+    }
+
+    /* Asset Switcher (Track 52px, Tile 44px, radius 16px/12px) */
+    .asset-track {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 4px;
+      gap: 4px;
+      width: 100%;
+      height: 52px;
+      background: var(--surface-track);
+      border-radius: 16px;
+    }
+
+    .asset-tile {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 0px;
+      gap: 8px;
+      flex: 1;
+      height: 44px;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .asset-tile.active {
+      background: var(--surface-card);
+      color: var(--ink-primary);
+      box-shadow: 0px 2px 8px rgba(11, 16, 38, 0.06), 0px 1px 2px rgba(11, 16, 38, 0.08);
+    }
+
+    .coin-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .coin-usdc {
+      background: #2E7BF0;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .coin-xlm {
+      background: #0B1026;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* Amount Readout (48px font, line-height 52px) */
+    .amount-readout {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: baseline;
+      padding: 2px 0px;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .amount-value {
+      font-family: 'Onest', sans-serif;
+      font-weight: 800;
+      font-size: 48px;
+      line-height: 52px;
+      letter-spacing: -1.5px;
+      color: var(--ink-primary);
+    }
+
+    .amount-asset {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--ink-muted);
+    }
+
+    /* Presets (4-column grid, 48px height, 14px radius) */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+      height: 48px;
+    }
+
+    .amount-chip {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      height: 48px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--ink-primary);
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .amount-chip:hover {
+      border-color: var(--ink-primary);
+      transform: translateY(-1px);
+    }
+
+    /* Selected Preset Flips to Navy bg with Lime text & lime glow */
+    .amount-chip.active {
+      background: #0B1026;
+      border: 1.5px solid #0B1026;
+      color: var(--lime-primary);
+      box-shadow: 0px 4px 16px rgba(11, 16, 38, 0.25), 0px 0px 16px var(--lime-glow);
+    }
+
+    /* Custom Amount Input (48px tall, 14px radius) */
+    .custom-input-box {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0px 16px;
+      gap: 8px;
+      width: 100%;
+      height: 48px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .custom-input-box:focus-within {
+      border-color: var(--purple-brand);
+      box-shadow: 0 0 0 4px rgba(106, 76, 245, 0.15);
+    }
+
+    .custom-input-field {
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      font-family: 'Onest', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--ink-primary);
+    }
+
+    .custom-input-field::placeholder {
+      color: var(--ink-muted);
+      font-weight: 400;
+    }
+
+    .custom-input-suffix {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-muted);
+      flex-shrink: 0;
+    }
+
+    /* Collapsible Add Name & Message */
+    .toggle-message-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      cursor: pointer;
+      user-select: none;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+
+    .add-icon-disc {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--purple-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--purple-brand);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-message-row.open .add-icon-disc {
+      transform: rotate(45deg);
+    }
+
+    .toggle-message-label {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--purple-brand);
+    }
+
+    .message-fields-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .message-fields-wrap.open {
+      display: flex;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .field-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .field-label {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 18px;
+      color: var(--ink-primary);
+    }
+
+    .field-counter {
+      font-family: 'Onest', sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .text-input-field {
+      box-sizing: border-box;
+      width: 100%;
+      height: 48px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 0px 16px;
+      font-family: 'Onest', sans-serif;
+      font-size: 15px;
+      color: var(--ink-primary);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .text-input-field:focus {
+      border-color: var(--purple-brand);
+      box-shadow: 0 0 0 4px rgba(106, 76, 245, 0.15);
+    }
+
+    .textarea-field {
+      box-sizing: border-box;
+      width: 100%;
+      height: 84px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-family: 'Onest', sans-serif;
+      font-size: 15px;
+      line-height: 20px;
+      color: var(--ink-primary);
+      outline: none;
+      resize: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .textarea-field:focus {
+      border-color: var(--purple-brand);
+      box-shadow: 0 0 0 4px rgba(106, 76, 245, 0.15);
+    }
+
+    /* THE SIGNATURE LIME PILL BUTTON */
+    .figma-lime-btn {
+      width: 100%;
+      height: 56px;
+      background: var(--lime-primary);
+      border: none;
+      border-radius: 999px;
+      padding: 0px 8px 0px 24px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 10px 24px var(--lime-glow), 0px 2px 4px rgba(11, 16, 38, 0.08);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+
+    .figma-lime-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0px 14px 32px var(--lime-glow-strong), 0px 4px 10px rgba(11, 16, 38, 0.12);
+    }
+
+    .figma-lime-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .figma-lime-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .figma-lime-btn .btn-label {
+      font-family: 'Onest', sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      color: #0B1026;
+    }
+
+    .figma-lime-btn .btn-disc {
+      width: 40px;
+      height: 40px;
+      background: #0B1026;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Secondary / Explorer Button (48px tall, 14px radius) */
+    .figma-secondary-btn {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 0px 24px;
+      gap: 8px;
+      width: 100%;
+      height: 48px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-strong);
+      border-radius: 14px;
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 24px;
+      color: var(--ink-primary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .figma-secondary-btn:hover {
+      background: var(--surface-track);
+      border-color: var(--ink-primary);
+    }
+
+    /* Inline Alert Box (Figma Warning / Error state) */
+    .figma-alert-box {
+      box-sizing: border-box;
+      display: none;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 12px 16px;
+      gap: 12px;
+      width: 100%;
+      border-radius: 14px;
+      font-family: 'Onest', sans-serif;
+      font-size: 13.5px;
+      line-height: 19px;
+      word-break: break-word;
+    }
+
+    .figma-alert-box.info {
+      display: flex;
+      background: #ECE8FF;
+      border: 1px solid #C7BAFF;
+      color: var(--purple-dark);
+    }
+
+    .figma-alert-box.error {
+      display: flex;
+      background: #FDF1E1;
+      border: 1px solid #F2D3A0;
+      color: #B45309;
+    }
+
+    /* Reassurance Footer */
+    .reassurance-footer {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    .brand-mark {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: var(--lime-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-mark-inner {
+      width: 8px;
+      height: 8px;
+      background: #0B1026;
+      border-radius: 2px;
+    }
+
+    .reassurance-text {
+      font-family: 'Onest', sans-serif;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--ink-muted);
+    }
+
+    /* SCREEN 6: Awaiting Signature / Broadcasting State */
+    .flow-top-bar {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 16px 12px;
+      gap: 12px;
+      width: 100%;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .bar-icon-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--surface-track);
+      border-radius: 10px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--ink-primary);
+      transition: background 0.15s ease;
+    }
+
+    .bar-icon-btn:hover {
+      background: var(--border-subtle);
+    }
+
+    .bar-title {
+      font-family: 'Onest', sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      text-align: center;
+      color: var(--ink-primary);
+      flex: 1;
+    }
+
+    /* Hero disc with Looping Spinner Arc */
+    .hero-disc-wrap {
+      position: relative;
+      width: 112px;
+      height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px auto 0;
+    }
+
+    .hero-disc-inner {
+      width: 96px;
+      height: 96px;
+      background: var(--surface-cover);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .hero-arc-spinner {
+      position: absolute;
+      inset: 2px;
+      border: 3px solid rgba(106, 76, 245, 0.15);
+      border-top-color: var(--purple-brand);
+      border-right-color: var(--purple-brand);
+      border-radius: 50%;
+      animation: startip-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      z-index: 2;
+    }
+
+    @keyframes startip-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .copy-heading {
+      font-family: 'Onest', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 32px;
+      letter-spacing: -0.4px;
+      text-align: center;
+      color: var(--ink-primary);
+    }
+
+    .copy-body {
+      font-family: 'Onest', sans-serif;
+      font-weight: 400;
+      font-size: 15px;
+      line-height: 22px;
+      text-align: center;
+      color: var(--ink-secondary);
+    }
+
+    /* Steps Tracker Card */
+    .steps-card {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 16px;
+      gap: 14px;
+      width: 100%;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--surface-card);
+    }
+
+    .step-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .step-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid var(--border-strong);
+      background: transparent;
+      color: var(--ink-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .step-indicator.active {
+      border-color: var(--purple-brand);
+      background: var(--purple-brand);
+      color: #FFFFFF;
+    }
+
+    .step-indicator.done {
+      border-color: #0B1026;
+      background: #0B1026;
+      color: var(--lime-primary);
+    }
+
+    .step-label {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-primary);
+      flex: 1;
+    }
+
+    .step-row.inactive .step-label {
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .step-status-tag {
+      font-family: 'Onest', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--purple-brand);
+    }
+
+    .step-row.inactive .step-status-tag {
+      color: var(--ink-muted);
+    }
+
+    /* Transaction Hash Row */
+    .tx-hash-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      width: 100%;
+      background: var(--surface-track);
+      border-radius: 14px;
+    }
+
+    .tx-hash-mono {
+      font-family: 'Red Hat Mono', monospace;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-primary);
+    }
+
+    .tx-hash-link {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--purple-brand);
+      text-decoration: none;
+    }
+
+    .tx-hash-link:hover {
+      text-decoration: underline;
+    }
+
+    /* SCREEN 7: Payment Confirmed / Receipt */
+    .success-band {
+      width: 100%;
+      height: 144px;
+      background: var(--surface-cover);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .check-disc {
+      width: 72px;
+      height: 72px;
+      background: var(--lime-primary);
+      box-shadow: 0px 0px 0px 8px rgba(198, 255, 61, 0.32), 0px 12px 28px rgba(198, 255, 61, 0.5);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .anton-heading {
+      font-family: 'Anton', sans-serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 40px;
+      line-height: 40px;
+      text-align: center;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+    }
+
+    /* Receipt Details Box */
+    .receipt-details-card {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--surface-card);
+      overflow: hidden;
+    }
+
+    .receipt-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0px 16px;
+      height: 48px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .receipt-row:first-child {
+      border-top: none;
+    }
+
+    .receipt-row-label {
+      font-family: 'Onest', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-secondary);
+    }
+
+    .receipt-row-value {
+      font-family: 'Onest', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--ink-primary);
+      text-align: right;
+    }
+
+    .receipt-row-mono {
+      font-family: 'Red Hat Mono', monospace;
+      font-weight: 500;
+      font-size: 13.5px;
+      color: var(--ink-primary);
+    }
+
+    .confirmed-pill {
+      box-sizing: border-box;
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0px 12px 0px 8px;
+      gap: 4px;
+      height: 28px;
+      background: var(--green-badge-bg);
+      border: 1px solid var(--green-badge-border);
+      border-radius: 999px;
+      font-family: 'Onest', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--green-badge-text);
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-muted);
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      color: var(--ink-primary);
+      background: var(--surface-track);
+    }
+
+    /* Screen visibility controls */
+    .flow-screen {
+      display: none;
+      width: 100%;
+    }
+
+    .flow-screen.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-card" id="widgetCard">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: Public Tip Card (Form State)     -->
+    <!-- ========================================== -->
+    <div id="screenTipForm" class="flow-screen active">
+      
+      <!-- Top Cover Band -->
+      <div class="widget-cover">
+        <!-- Figma Geometric Vector Pattern -->
+        <svg class="cover-pattern" viewBox="0 0 358 80" fill="none" preserveAspectRatio="none">
+          <line x1="-20" y1="-10" x2="160" y2="120" stroke="var(--pattern-stroke)" stroke-width="1.5" />
+          <circle cx="280" cy="15" r="45" stroke="var(--pattern-stroke)" stroke-width="1.5" fill="none" />
+          <circle cx="35" cy="65" r="16" fill="var(--pattern-stroke)" opacity="0.6" />
+          <rect x="110" y="-15" width="55" height="55" rx="12" stroke="var(--pattern-stroke)" stroke-width="1.5" transform="rotate(22 135 15)" />
+        </svg>
+
+        {% if config.banner_url %}
+        <img src="{{ config.banner_url }}" alt="Banner" class="cover-banner-img" onerror="this.style.display='none';">
+        {% endif %}
+
+        <!-- Status Badge: TESTNET -->
+        <div class="status-badge">
+          <div class="status-badge-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="#C6FF3D" stroke-width="1.2" stroke-dasharray="2 2"/>
+              <circle cx="8" cy="8" r="2.5" fill="#C6FF3D"/>
+            </svg>
+          </div>
+          <span class="status-badge-label">TESTNET</span>
+        </div>
+      </div>
+
+      <!-- Avatar Disc (64x64) overlapping cover -->
+      <div class="avatar-disc">
+        {% if config.avatar_url %}
+          <img src="{{ config.avatar_url }}" alt="{{ creator.display_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <span class="avatar-initials" style="display: none;">{{ creator.display_name|slice:":1"|upper }}</span>
+        {% elif creator.avatar_url %}
+          <img src="{{ creator.avatar_url }}" alt="{{ creator.display_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <span class="avatar-initials" style="display: none;">{{ creator.display_name|slice:":1"|upper }}</span>
+        {% else %}
+          <span class="avatar-initials">{{ creator.display_name|slice:":1"|upper }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Profile Header -->
+      <div class="profile-section">
+        <div class="profile-name-row">
+          <span class="profile-name">{{ config.widget_title|default:creator.display_name }}</span>
+          <span class="profile-handle">@{{ creator.username }}</span>
+          {% if config.name and config.name != 'Main Tip Link' %}
+            <span class="campaign-tag">{{ config.name }}</span>
+          {% endif %}
+        </div>
+        <p class="profile-bio">{{ config.welcome_message|default:"Support my creative work directly on the Stellar testnet." }}</p>
+        <div class="profile-divider"></div>
+      </div>
+
+      <!-- Body / Form Fields -->
+      <div class="body-section">
+
+        <!-- Asset Switcher (USDC / XLM) -->
+        <div class="asset-track">
+          <button type="button" class="asset-tile active" id="tabXlm" onclick="selectAsset('XLM')">
+            <div class="coin-icon coin-xlm">✦</div>
+            <span>XLM</span>
+          </button>
+          <button type="button" class="asset-tile" id="tabUsdc" onclick="selectAsset('USDC')">
+            <div class="coin-icon coin-usdc">$</div>
+            <span>USDC</span>
+          </button>
+        </div>
+
+        <!-- Big Amount Readout -->
+        <div class="amount-readout">
+          <span class="amount-value" id="displayAmount">10</span>
+          <span class="amount-asset" id="displayAsset">XLM</span>
+        </div>
+
+        <!-- Preset Chips Grid (4-columns) -->
+        <div class="presets-grid" id="presetGrid">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Custom Amount Input -->
+        {% if config.allow_custom_amount != False %}
+        <div class="custom-input-box">
+          <input type="number" step="any" min="0.1" id="customAmountInput" class="custom-input-field" placeholder="Custom amount" oninput="onCustomAmountChange()">
+          <span class="custom-input-suffix" id="assetSuffix">XLM</span>
+        </div>
+        {% endif %}
+
+        <!-- Collapsible Supporter Message Section -->
+        <button type="button" class="toggle-message-row" id="toggleMsgBtn" onclick="toggleMessageSection()">
+          <div class="add-icon-disc" id="addIconDisc">+</div>
+          <span class="toggle-message-label" id="toggleMsgLabel">Add your name and a message</span>
+        </button>
+
+        <div class="message-fields-wrap" id="messageFieldsWrap">
+          <div class="field-group">
+            <div class="field-label-row">
+              <span class="field-label">Your Name</span>
+            </div>
+            <input type="text" id="supporterNameInput" class="text-input-field" placeholder="Your name or @handle (optional)">
+          </div>
+
+          {% if config.allow_supporter_message != False %}
+          <div class="field-group">
+            <div class="field-label-row">
+              <span class="field-label">Message</span>
+              <span class="field-counter" id="charCounter">0/140</span>
+            </div>
+            <textarea id="supporterMessageInput" class="textarea-field" placeholder="Leave a nice comment..." maxlength="140" oninput="updateCharCounter()"></textarea>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Status Alert Box -->
+        <div id="statusMessage" class="figma-alert-box"></div>
+
+        <!-- Primary Action: Signature Lime Pill Button -->
+        <button type="button" class="figma-lime-btn" id="tipSubmitBtn" onclick="initiateTip()">
+          <span class="btn-label" id="btnLabel">Tip 10 XLM</span>
+          <div class="btn-disc">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4.5 11.5L11.5 4.5M11.5 4.5H6M11.5 4.5V10" stroke="#C6FF3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Reassurance Footer -->
+        <div class="reassurance-footer">
+          <div class="brand-mark">
+            <div class="brand-mark-inner"></div>
+          </div>
+          <span class="reassurance-text">Non-custodial · Direct on Stellar Testnet</span>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- SCREEN 6: Awaiting Signature / Broadcast   -->
+    <!-- ========================================== -->
+    <div id="screenAwaiting" class="flow-screen">
+      
+      <!-- Flow Top Bar -->
+      <div class="flow-top-bar">
+        <button type="button" class="bar-icon-btn" onclick="returnToForm()" title="Cancel and go back">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 13L5 8L10 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="bar-title" id="awaitingTitle">Awaiting signature</span>
+        <div class="status-badge">
+          <div class="status-badge-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="#C6FF3D" stroke-width="1.2" stroke-dasharray="2 2"/>
+              <circle cx="8" cy="8" r="2.5" fill="#C6FF3D"/>
+            </svg>
+          </div>
+          <span class="status-badge-label">TESTNET</span>
+        </div>
+      </div>
+
+      <!-- Body / Status Content -->
+      <div class="body-section" style="align-items: center; text-align: center; gap: 20px;">
+        
+        <!-- Hero Disc with Animated Looping Arc Spinner -->
+        <div class="hero-disc-wrap">
+          <div class="hero-arc-spinner"></div>
+          <div class="hero-disc-inner">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+              <path d="M19 7H5C3.89543 7 3 7.89543 3 9V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7Z" stroke="#0B1026" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 13C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11C15.4477 11 15 11.4477 15 12C15 12.5523 15.4477 13 16 13Z" fill="#0B1026"/>
+              <path d="M7 7V5C7 4.46957 7.21071 3.96086 7.58579 3.58579C7.96086 3.21071 8.46957 3 9 3H15C15.5304 3 16.0391 3.21071 16.4142 3.58579C16.7893 3.96086 17 4.46957 17 5V7" stroke="#0B1026" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="copy-heading" id="awaitingHeading">Sign in your wallet</h3>
+          <p class="copy-body" id="awaitingSubtext" style="margin-top: 6px;">Approve the transaction in your Stellar wallet to complete your tip.</p>
+        </div>
+
+        <!-- 3-Step Tracker -->
+        <div class="steps-card">
+          <!-- Step 1: Approve -->
+          <div class="step-row" id="stepRow1">
+            <div class="step-indicator active" id="stepDot1">1</div>
+            <span class="step-label">Approve transaction</span>
+            <span class="step-status-tag" id="stepTag1">Active</span>
+          </div>
+
+          <!-- Step 2: Send -->
+          <div class="step-row inactive" id="stepRow2">
+            <div class="step-indicator" id="stepDot2">2</div>
+            <span class="step-label">Submit to Stellar network</span>
+            <span class="step-status-tag" id="stepTag2">Pending</span>
+          </div>
+
+          <!-- Step 3: Confirm -->
+          <div class="step-row inactive" id="stepRow3">
+            <div class="step-indicator" id="stepDot3">3</div>
+            <span class="step-label">Confirm on ledger</span>
+            <span class="step-status-tag" id="stepTag3">Pending</span>
+          </div>
+        </div>
+
+        <!-- Optional tx hash row when broadcasting -->
+        <div class="tx-hash-row" id="awaitingTxRow" style="display: none;">
+          <div>
+            <div style="font-size: 11px; color: var(--ink-muted); text-align: left;">Transaction Hash</div>
+            <div class="tx-hash-mono" id="awaitingTxHash">3f9a...c21e</div>
+          </div>
+          <a href="#" target="_blank" class="tx-hash-link" id="awaitingExplorerLink">View ↗</a>
+        </div>
+
+        <button type="button" class="figma-secondary-btn" onclick="returnToForm()">
+          <span>Cancel</span>
+        </button>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- SCREEN 7: Payment Confirmed (Receipt)      -->
+    <!-- ========================================== -->
+    <div id="screenSuccess" class="flow-screen">
+      
+      <!-- Flow Top Bar -->
+      <div class="flow-top-bar">
+        <button type="button" class="bar-icon-btn" onclick="closeWidgetModal()" title="Close">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="bar-title">Receipt</span>
+        <div class="status-badge">
+          <div class="status-badge-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="#C6FF3D" stroke-width="1.2"/>
+              <circle cx="8" cy="8" r="2.5" fill="#C6FF3D"/>
+            </svg>
+          </div>
+          <span class="status-badge-label">TESTNET</span>
+        </div>
+      </div>
+
+      <!-- Success Band with Glowing Check Disc -->
+      <div class="success-band">
+        <svg class="cover-pattern" viewBox="0 0 358 144" fill="none" preserveAspectRatio="none">
+          <circle cx="179" cy="72" r="65" stroke="var(--pattern-stroke)" stroke-width="1.5" fill="none"/>
+          <line x1="-10" y1="20" x2="370" y2="130" stroke="var(--pattern-stroke)" stroke-width="1.5"/>
+          <circle cx="50" cy="110" r="14" fill="var(--pattern-stroke)" opacity="0.6"/>
+          <circle cx="310" cy="30" r="14" fill="var(--pattern-stroke)" opacity="0.6"/>
+        </svg>
+
+        <div class="check-disc">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+            <path d="M5 13L9.5 17.5L19 7" stroke="#0B1026" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Body / Receipt Details -->
+      <div class="body-section" style="align-items: center; text-align: center; gap: 18px;">
+        
+        <div>
+          <h2 class="anton-heading">THANK YOU!</h2>
+          <p class="copy-body" style="margin-top: 6px;">Your tip was delivered directly on the Stellar testnet.</p>
+        </div>
+
+        <!-- Receipt Card -->
+        <div class="receipt-details-card">
+          <div class="receipt-row">
+            <span class="receipt-row-label">Amount</span>
+            <span class="receipt-row-value" id="receiptAmount">10 XLM</span>
+          </div>
+
+          <div class="receipt-row">
+            <span class="receipt-row-label">To</span>
+            <span class="receipt-row-value">{{ config.widget_title|default:creator.display_name }}</span>
+          </div>
+
+          <div class="receipt-row">
+            <span class="receipt-row-label">Transaction</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="receipt-row-mono" id="receiptTxShort">3f9a…c21e</span>
+              <button type="button" class="copy-btn" id="receiptCopyBtn" onclick="copyReceiptTx()" title="Copy full transaction hash">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <rect x="5" y="5" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M3 11V4C3 3.44772 3.44772 3 4 3H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="receipt-row">
+            <span class="receipt-row-label">Status</span>
+            <div class="confirmed-pill">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#15803D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Confirmed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Primary Lime Pill: Send Another Tip -->
+          <button type="button" class="figma-lime-btn" onclick="returnToForm()">
+            <span class="btn-label">Send another tip</span>
+            <div class="btn-disc">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4.5 11.5L11.5 4.5M11.5 4.5H6M11.5 4.5V10" stroke="#C6FF3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Secondary Explorer Link Button -->
+          <a href="#" target="_blank" id="receiptExplorerBtn" class="figma-secondary-btn">
+            <span>View on Stellar Explorer ↗</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Detect iframe embedding
+    if (window.self !== window.top) {
+      document.body.classList.add('in-iframe');
+    }
+
+    function notifyParentHeight() {
+      if (window.parent && window.parent !== window) {
+        const card = document.getElementById('widgetCard');
+        const height = card ? card.offsetHeight : document.body.scrollHeight;
+        window.parent.postMessage({ type: 'startip:resize', height: height }, '*');
+      }
+    }
+    window.addEventListener('load', notifyParentHeight);
+    window.addEventListener('resize', notifyParentHeight);
+
+    function closeWidgetModal() {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'startip:close' }, '*');
+      }
+    }
+
+    const creatorUsername = "{{ creator.username }}";
+    const widgetSlug = "{{ config.slug|default:'' }}";
+    const recipientWallet = "{{ creator.receiving_wallet_address }}";
+    const usdcIssuer = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
+    const horizonUrl = "https://horizon-testnet.stellar.org";
+    const xlmPresets = {{ config.preset_amounts_xlm|safe|default:"[5, 10, 25, 50]" }};
+    const usdcPresets = {{ config.preset_amounts_usdc|safe|default:"[1, 2, 5, 10]" }};
+
+    let selectedAsset = 'XLM';
+    let currentAmount = xlmPresets[0] || 10;
+    let fullTxHash = '';
+
+    // Screen Switching
+    function showScreen(screenId) {
+      document.querySelectorAll('.flow-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+      }
+      setTimeout(notifyParentHeight, 50);
+    }
+
+    function returnToForm() {
+      const btn = document.getElementById('tipSubmitBtn');
+      if (btn) btn.disabled = false;
+      updateMainButtonLabel();
+      showScreen('screenTipForm');
+    }
+
+    // Amount & Asset Management
+    function renderPresets() {
+      const grid = document.getElementById('presetGrid');
+      grid.innerHTML = '';
+      const presets = selectedAsset === 'XLM' ? xlmPresets : usdcPresets;
+
+      presets.forEach((val) => {
+        const chip = document.createElement('div');
+        chip.className = `amount-chip ${parseFloat(val) === parseFloat(currentAmount) ? 'active' : ''}`;
+        chip.textContent = val;
+        chip.onclick = () => {
+          currentAmount = val;
+          const customInp = document.getElementById('customAmountInput');
+          if (customInp) customInp.value = val;
+          updateReadout();
+          renderPresets();
+        };
+        grid.appendChild(chip);
+      });
+    }
+
+    function selectAsset(asset) {
+      selectedAsset = asset;
+      document.getElementById('tabXlm').className = `asset-tile ${asset === 'XLM' ? 'active' : ''}`;
+      document.getElementById('tabUsdc').className = `asset-tile ${asset === 'USDC' ? 'active' : ''}`;
+      
+      const assetSuffix = document.getElementById('assetSuffix');
+      if (assetSuffix) assetSuffix.textContent = asset;
+      
+      currentAmount = asset === 'XLM' ? xlmPresets[0] : usdcPresets[0];
+      const customInp = document.getElementById('customAmountInput');
+      if (customInp) customInp.value = currentAmount;
+      
+      updateReadout();
+      renderPresets();
+    }
+
+    function updateReadout() {
+      const dispAmt = document.getElementById('displayAmount');
+      const dispAsset = document.getElementById('displayAsset');
+      if (dispAmt) dispAmt.textContent = currentAmount;
+      if (dispAsset) dispAsset.textContent = selectedAsset;
+      updateMainButtonLabel();
+    }
+
+    function updateMainButtonLabel() {
+      const btnLabel = document.getElementById('btnLabel');
+      if (btnLabel) {
+        btnLabel.textContent = `Tip ${currentAmount} ${selectedAsset}`;
+      }
+    }
+
+    function onCustomAmountChange() {
+      const customInp = document.getElementById('customAmountInput');
+      if (!customInp) return;
+      const val = parseFloat(customInp.value);
+      if (val > 0) {
+        currentAmount = val;
+      }
+      updateReadout();
+      document.querySelectorAll('.amount-chip').forEach(b => {
+        if (parseFloat(b.textContent) === currentAmount) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+    }
+
+    // Toggle Collapsible Name & Message
+    function toggleMessageSection() {
+      const wrap = document.getElementById('messageFieldsWrap');
+      const btn = document.getElementById('toggleMsgBtn');
+      const isOpen = wrap.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      notifyParentHeight();
+    }
+
+    function updateCharCounter() {
+      const input = document.getElementById('supporterMessageInput');
+      const counter = document.getElementById('charCounter');
+      if (input && counter) {
+        counter.textContent = `${input.value.length}/140`;
+      }
+    }
+
+    function setStatus(msg, type = 'error') {
+      const el = document.getElementById('statusMessage');
+      if (!msg) {
+        el.style.display = 'none';
+        return;
+      }
+      el.className = `figma-alert-box ${type}`;
+      el.innerHTML = msg;
+      notifyParentHeight();
+    }
+
+    // Steps updates in Screen 6
+    function setStepProgress(stepNum, statusText = '') {
+      const row1 = document.getElementById('stepRow1');
+      const dot1 = document.getElementById('stepDot1');
+      const tag1 = document.getElementById('stepTag1');
+
+      const row2 = document.getElementById('stepRow2');
+      const dot2 = document.getElementById('stepDot2');
+      const tag2 = document.getElementById('stepTag2');
+
+      const row3 = document.getElementById('stepRow3');
+      const dot3 = document.getElementById('stepDot3');
+      const tag3 = document.getElementById('stepTag3');
+
+      if (stepNum === 1) {
+        row1.className = 'step-row';
+        dot1.className = 'step-indicator active';
+        tag1.textContent = statusText || 'Active';
+
+        row2.className = 'step-row inactive';
+        dot2.className = 'step-indicator';
+        tag2.textContent = 'Pending';
+
+        row3.className = 'step-row inactive';
+        dot3.className = 'step-indicator';
+        tag3.textContent = 'Pending';
+      } else if (stepNum === 2) {
+        row1.className = 'step-row';
+        dot1.className = 'step-indicator done';
+        dot1.innerHTML = '✓';
+        tag1.textContent = 'Done';
+
+        row2.className = 'step-row';
+        dot2.className = 'step-indicator active';
+        tag2.textContent = statusText || 'Broadcasting';
+
+        row3.className = 'step-row inactive';
+        dot3.className = 'step-indicator';
+        tag3.textContent = 'Pending';
+      } else if (stepNum === 3) {
+        row1.className = 'step-row';
+        dot1.className = 'step-indicator done';
+        dot1.innerHTML = '✓';
+        tag1.textContent = 'Done';
+
+        row2.className = 'step-row';
+        dot2.className = 'step-indicator done';
+        dot2.innerHTML = '✓';
+        tag2.textContent = 'Done';
+
+        row3.className = 'step-row';
+        dot3.className = 'step-indicator active';
+        tag3.textContent = statusText || 'Confirming';
+      }
+    }
+
+    // Show Success Screen 7
+    function showPaymentSuccess(amount, asset, txHash, explorerUrl) {
+      fullTxHash = txHash || '';
+      document.getElementById('receiptAmount').textContent = `${amount} ${asset}`;
+      
+      const shortHash = txHash ? `${txHash.slice(0, 4)}…${txHash.slice(-4)}` : 'Confirmed';
+      document.getElementById('receiptTxShort').textContent = shortHash;
+
+      const expUrl = explorerUrl || `https://stellar.expert/explorer/testnet/tx/${txHash}`;
+      const expBtn = document.getElementById('receiptExplorerBtn');
+      if (expBtn) expBtn.href = expUrl;
+
+      showScreen('screenSuccess');
+
+      // ⚡ Desktop Chrome notification and parent notification
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('⚡ Tip Confirmed on Stellar!', {
+            body: `Your tip of ${amount} ${asset} was successfully sent and confirmed on ledger!`,
+            icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="%230B1026"/><circle cx="64" cy="64" r="54" fill="none" stroke="%23C6FF3D" stroke-width="4" stroke-opacity="0.35"/><path d="M70 20 L38 72 L62 72 L58 108 L90 56 L66 56 Z" fill="%23C6FF3D"/></svg>',
+            tag: `startip-receipt-${txHash || Date.now()}`
+          });
+        }
+      } catch (e) {}
+
+      try {
+        window.parent.postMessage({ type: 'startip:tip_confirmed', amount: amount, asset: asset, txHash: txHash }, '*');
+      } catch (e) {}
+    }
+
+    function copyReceiptTx() {
+      if (!fullTxHash) return;
+      navigator.clipboard.writeText(fullTxHash).then(() => {
+        const btn = document.getElementById('receiptCopyBtn');
+        btn.innerHTML = '✓';
+        setTimeout(() => {
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V4C3 3.44772 3.44772 3 4 3H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+        }, 1500);
+      });
+    }
+
+    // MAIN TIP INITIATION: Opens official Stellar Wallets Kit on click
+    async function initiateTip() {
+      const btn = document.getElementById('tipSubmitBtn');
+      const nameInput = document.getElementById('supporterNameInput');
+      const msgInput = document.getElementById('supporterMessageInput');
+      const supporterName = (nameInput ? nameInput.value.trim() : '') || 'Anonymous';
+      const message = msgInput ? msgInput.value.trim() : '';
+
+      if (!currentAmount || currentAmount <= 0) {
+        setStatus("Please select or enter a valid tip amount.", "error");
+        return;
+      }
+
+      setStatus("", "info");
+      btn.disabled = true;
+
+      // Transition to Screen 6: Awaiting Signature
+      document.getElementById('awaitingHeading').textContent = "Sign in your wallet";
+      document.getElementById('awaitingSubtext').textContent = "Select your wallet and approve the transaction to complete your tip.";
+      setStepProgress(1, "Active");
+      showScreen('screenAwaiting');
+
+      const payload = {
+        creatorUsername,
+        widgetSlug,
+        asset: selectedAsset,
+        amount: currentAmount,
+        supporterName,
+        message,
+        recipientWallet
+      };
+
+      if (window.parent && window.parent !== window) {
+        // Embedded mode: Delegate to host page so browser extensions (Freighter, etc.) are 100% detected!
+        window.parent.postMessage({ type: 'startip:send_tip', payload }, '*');
+      } else {
+        // Standalone tab mode: Run official Stellar Wallets Kit directly
+        executeStandaloneTipFlow(payload);
+      }
+    }
+
+    // Standalone flow for when widget.html is viewed directly in its own tab
+    async function executeStandaloneTipFlow(payload) {
+      try {
+        if (typeof window.initDefaultStellarKit === 'function') {
+          window.initDefaultStellarKit();
+        }
+        if (typeof window.StellarWalletsKit === 'undefined') {
+          throw new Error("Stellar Wallets Kit library is loading. Please try again.");
+        }
+
+        // 1. Open official kit modal
+        const authResult = await window.StellarWalletsKit.authModal();
+        if (!authResult || !authResult.address) {
+          throw new Error("No wallet connected.");
+        }
+
+        const supporterWallet = authResult.address;
+        const selectedMod = window.StellarWalletsKit.selectedModule;
+        const providerName = selectedMod ? (selectedMod.productName || selectedMod.id) : "Stellar Wallet";
+
+        document.getElementById('awaitingHeading').textContent = "Approve in " + providerName;
+        document.getElementById('awaitingSubtext').textContent = `Connected to ${supporterWallet.slice(0, 4)}...${supporterWallet.slice(-4)}. Preparing transaction...`;
+
+        // 2. Create Payment Request
+        const reqPayload = {
+          creator_username: payload.creatorUsername,
+          asset_code: payload.asset,
+          amount: payload.amount,
+          supporter_name: payload.supporterName || 'Anonymous',
+          message: payload.message || '',
+          supporter_wallet: supporterWallet
+        };
+        if (payload.widgetSlug) {
+          reqPayload.widget_slug = payload.widgetSlug;
+        }
+
+        const reqResp = await fetch('/api/payments/create-request/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqPayload)
+        });
+        const reqData = await reqResp.json();
+        if (!reqResp.ok) {
+          throw new Error(typeof reqData.error === 'string' ? reqData.error : JSON.stringify(reqData));
+        }
+        const refId = reqData.reference_id;
+
+        // 3. Build XDR
+        const xdrResp = await fetch('/api/payments/build-xdr/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reference_id: refId,
+            supporter_wallet: supporterWallet
+          })
+        });
+        const xdrData = await xdrResp.json();
+        if (!xdrResp.ok) {
+          throw new Error(xdrData.error || "Failed to build transaction XDR.");
+        }
+
+        // 4. Sign with supporter's wallet
+        document.getElementById('awaitingSubtext').textContent = `Please sign the transaction in ${providerName}...`;
+        const signResult = await window.StellarWalletsKit.signTransaction(xdrData.unsigned_xdr, {
+          networkPassphrase: xdrData.network_passphrase,
+          address: supporterWallet
+        });
+
+        const signedXdr = typeof signResult === 'string' ? signResult : (signResult.signedTxXdr || signResult.xdr || signResult);
+        if (!signedXdr) throw new Error("Transaction signing was cancelled by the wallet.");
+
+        // 5. Broadcast to Horizon
+        setStepProgress(2, "Broadcasting");
+        document.getElementById('awaitingHeading').textContent = "Broadcasting to Stellar";
+        document.getElementById('awaitingSubtext').textContent = "Submitting your signed transaction to the Stellar testnet...";
+
+        const formBody = new URLSearchParams();
+        formBody.append('tx', signedXdr);
+        const subResp = await fetch(`${horizonUrl}/transactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formBody.toString()
+        });
+        const subData = await subResp.json();
+        if (!subResp.ok || !subData.successful) {
+          const errCodes = subData.extras?.result_codes?.transaction || subData.detail || 'Horizon rejected transaction';
+          throw new Error(`Stellar Horizon submission failed: ${errCodes}`);
+        }
+        const onChainTxHash = subData.hash;
+
+        // 6. Verify on Backend
+        setStepProgress(3, "Finalizing");
+        document.getElementById('awaitingHeading').textContent = "Confirming on Ledger";
+        document.getElementById('awaitingSubtext').textContent = `Transaction ${onChainTxHash.slice(0, 8)}... confirmed on Stellar!`;
+
+        const verifyResp = await fetch('/api/payments/verify/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reference_id: refId,
+            stellar_tx_hash: onChainTxHash
+          })
+        });
+        const verifyData = await verifyResp.json();
+        if (!verifyResp.ok) {
+          throw new Error(typeof verifyData.error === 'string' ? verifyData.error : JSON.stringify(verifyData));
+        }
+
+        // Transition to Screen 7 (Receipt)
+        showPaymentSuccess(payload.amount, payload.asset, onChainTxHash, verifyData.stellar_explorer_url);
+
+      } catch (err) {
+        returnToForm();
+        if (err && (err.code === -1 || (err.message && err.message.includes("closed")))) {
+          setStatus("Wallet selection was closed.", "info");
+        } else {
+          setStatus(err.message || String(err), "error");
+        }
+      }
+    }
+
+    // Handle messages from host window
+    window.addEventListener('message', (e) => {
+      if (!e.data) return;
+
+      if (e.data.type === 'startip:status') {
+        const text = e.data.text || '';
+        const statusType = e.data.statusType || 'info';
+
+        if (statusType === 'error' || text.includes('cancelled') || text.includes('closed')) {
+          returnToForm();
+          setStatus(text, 'error');
+        } else if (text.includes('Broadcasting')) {
+          setStepProgress(2, "Broadcasting");
+          document.getElementById('awaitingHeading').textContent = "Broadcasting to Stellar";
+          document.getElementById('awaitingSubtext').textContent = text;
+        } else if (text.includes('Confirmed on Stellar') || text.includes('Finalizing')) {
+          setStepProgress(3, "Finalizing");
+          document.getElementById('awaitingHeading').textContent = "Confirming on Ledger";
+          document.getElementById('awaitingSubtext').textContent = text;
+        } else {
+          document.getElementById('awaitingSubtext').textContent = text;
+        }
+      }
+
+      if (e.data.type === 'startip:tip_success') {
+        showPaymentSuccess(e.data.amount, e.data.asset, e.data.txHash, e.data.explorerUrl);
+      }
+    });
+
+    // Initial setup
+    renderPresets();
+    updateReadout();
+    const initialInput = document.getElementById('customAmountInput');
+    if (initialInput && !initialInput.value) {
+      initialInput.value = currentAmount;
+    }
+  </script>
+</body>
+</html>

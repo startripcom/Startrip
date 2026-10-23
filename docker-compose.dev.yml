@@ -1,0 +1,36 @@
+services:
+  web:
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+      - media_data:/app/media
+    environment:
+      - DJANGO_DEBUG=True
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "5173:5173"
+    environment:
+      - FRONTEND_CONTAINER_PORT=5173
+      - VITE_API_BASE_URL=http://localhost:8000/api
+      - VITE_BACKEND_PROXY_URL=http://web:8000
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+  celery_worker:
+    volumes:
+      - ./backend:/app
+      - media_data:/app/media
+
+  celery_beat:
+    volumes:
+      - ./backend:/app
+
+  soroban_indexer:
+    volumes:
+      - ./backend:/app

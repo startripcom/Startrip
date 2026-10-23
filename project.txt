@@ -1,0 +1,553 @@
+STARTIP
+MVP Project Brief for UI/UX Designers & Developers
+Project Name: StarTip
+Project Type: Creator Monetization / Web3 Payments
+Blockchain: Stellar
+Development Stage: MVP — Sprint 1
+Platform: Web Application + Embeddable Tipping Widget
+Supported Assets: XLM and USDC
+Environment: Stellar Testnet
+
+1. Project Overview
+StarTip is a non-custodial, Stellar-powered tipping platform that enables content creators, streamers, educators, developers, and independent publishers to receive tips directly from supporters using XLM or USDC.
+The platform provides creators with an embeddable tipping widget that can be added to websites, blogs, creator pages, and compatible livestream environments.
+Supporters can select an asset, enter an amount, connect a Stellar wallet, and send a tip directly to the creator's wallet.
+Creators will have access to a dashboard for tracking incoming tips, reviewing payment history, generating embed codes, and configuring live tip notifications for streaming demonstrations.
+The goal is to make sending and receiving digital tips as simple as clicking a button, while using Stellar to enable fast, low-cost, direct payments.
+The MVP will operate on Stellar Testnet using test assets.
+2. Problem Being Solved
+Creators often depend on centralized platforms and payment processors to receive tips and donations.
+These platforms may introduce:
+High processing fees for small payments.
+Geographic payment restrictions.
+Delayed access to earnings.
+Limited control over payment infrastructure.
+Difficulties accepting international payments.
+Limited integration options for independent websites.
+Fragmented donation and payment tracking.
+StarTip addresses these problems by enabling direct wallet-to-wallet tipping on Stellar and providing a reusable payment widget that creators can integrate into their existing platforms.
+3. Target Users
+Creators
+Content creators and influencers.
+Livestreamers.
+YouTubers and podcasters.
+Educators and online tutors.
+Open-source developers.
+Bloggers and independent publishers.
+Community organizers.
+Supporters
+Fans and followers.
+Community members.
+Readers and viewers.
+Individuals supporting creators internationally.
+Stellar wallet users.
+4. Core User Journey
+Creator Journey
+Creator visits StarTip.
+Connects their Stellar wallet.
+Creates a creator profile.
+Configures their tipping widget.
+Selects supported payment assets.
+Customizes the widget appearance.
+Generates an embed code.
+Adds the widget to their website or streaming page.
+Receives tips directly into their wallet.
+Monitors incoming payments and live alerts.
+Supporter Journey
+Supporter opens the creator's tipping widget.
+Selects XLM or USDC.
+Chooses a preset tip amount or enters a custom amount.
+Optionally adds a display name and message.
+Connects a compatible Stellar wallet.
+Reviews payment details.
+Approves the transaction.
+Receives payment confirmation.
+Creator receives a notification after the transaction is confirmed.
+Core Product Flow:
+Creator Creates Widget → Embeds Widget → Supporter Connects Wallet → Sends Tip → Stellar Confirms Payment → Dashboard Updates → Live Alert Appears
+
+PART A — UI/UX DESIGN BRIEF
+5. Design Objective
+Design a modern, engaging, and easy-to-use tipping platform that makes supporting creators feel quick, personal, and rewarding.
+The interface should combine the simplicity of modern creator monetization platforms with the transparency of Stellar payments.
+The design must support two distinct experiences:
+Creator Experience: A professional dashboard for configuring widgets, monitoring earnings, and managing notifications.
+Supporter Experience: A lightweight tipping interface that makes sending a tip possible in a few simple steps.
+Design Direction
+Modern creator-economy aesthetic.
+Clean and engaging visual identity.
+Simple, friendly payment interface.
+Strong emphasis on tip amounts and primary actions.
+Professional dashboard design.
+Mobile-first supporter experience.
+Responsive layouts.
+Clear transaction status indicators.
+Suggested colors: dark navy, purple, electric blue, and subtle green accents.
+6. Required Product Screens
+Screen 1 — Landing Page
+Purpose: Introduce StarTip and encourage creators to get started.
+Required Sections:
+StarTip logo.
+Navigation bar.
+Hero headline: "Turn Appreciation Into Instant Tips."
+Supporting description.
+Create Your Tip Widget button.
+Try Demo Widget button.
+How StarTip Works.
+XLM and USDC payment support.
+Widget preview.
+Creator dashboard preview.
+Live tip alert preview.
+Footer.
+The landing page should communicate that StarTip is a creator tipping tool, not a cryptocurrency exchange.
+Screen 2 — Creator Onboarding
+Purpose: Allow creators to set up their accounts.
+Required Components:
+Connect Stellar Wallet.
+Creator display name.
+Username.
+Profile picture.
+Short bio.
+Website or social media link.
+Receiving wallet address.
+Supported tip assets.
+Save Profile button.
+The connected wallet must be used to verify control of the receiving address.
+Screen 3 — Creator Dashboard
+Purpose: Give creators a complete overview of their tipping activity.
+Required Components:
+Summary Cards
+Total XLM Tips Received.
+Total USDC Tips Received.
+Number of Tips.
+Tips Received Today.
+Additional Sections
+Recent tips.
+Tip activity chart.
+Top supporters, where display names are available.
+Widget status.
+Copy Tip Link button.
+Customize Widget button.
+Live Alerts button.
+XLM and USDC totals must be displayed separately unless a clearly labeled conversion estimate is provided.
+Screen 4 — Widget Customization
+Purpose: Allow creators to configure their tipping widget.
+Required Components:
+Widget preview.
+Creator name.
+Creator avatar.
+Widget title.
+Welcome message.
+Theme selection.
+Primary color.
+Supported assets.
+Preset tip amounts.
+Custom amount option.
+Optional supporter message toggle.
+Save Configuration button.
+The widget preview should update as the creator changes settings.
+Screen 5 — Embeddable Tipping Widget
+Purpose: Allow supporters to send tips.
+This is the most important product interface.
+Required Components:
+Creator avatar.
+Creator name.
+Short support message.
+Select Asset: XLM / USDC.
+Preset amount buttons.
+Custom amount input.
+Optional supporter display name.
+Optional message field.
+Connect Wallet button.
+Tip Now button.
+Suggested Preset Amounts
+USDC: 1, 2, 5, 10
+XLM: 5, 10, 25, 50
+Supporters must be able to enter custom amounts.
+The widget must work on desktop and mobile without requiring users to leave the creator's website unnecessarily.
+Screen 6 — Payment Review & Confirmation
+Purpose: Allow supporters to verify transaction details.
+Required Components:
+Creator name.
+Recipient wallet address.
+Selected asset.
+Tip amount.
+Estimated network fee.
+Supporter wallet.
+Confirm Tip button.
+Cancel button.
+Transaction States
+Wallet disconnected.
+Wallet connecting.
+Awaiting signature.
+Transaction submitted.
+Transaction pending.
+Payment confirmed.
+Payment failed.
+Transaction rejected.
+The interface must not show a successful tip until the payment is confirmed on Stellar.
+Screen 7 — Tip Success
+Purpose: Confirm successful payment.
+Required Components:
+Success animation or icon.
+Thank-you message.
+Creator name.
+Tip amount.
+Asset.
+Transaction reference.
+View on Stellar Explorer button.
+Send Another Tip button.
+Screen 8 — Embed Code & Integration
+Purpose: Allow creators to install the tipping widget.
+Required Components:
+Widget preview.
+Embed method selector.
+JavaScript embed code.
+iframe embed code.
+Copy Code button.
+Installation instructions.
+Preview Widget button.
+Public tipping page link.
+The integration instructions should be simple enough for a creator with basic website management experience.
+Screen 9 — Tip History
+Purpose: Allow creators to review received payments.
+Required Information:
+Tip ID.
+Supporter display name, if provided.
+Supporter wallet.
+Asset.
+Amount.
+Optional message.
+Date and time.
+Transaction status.
+Stellar transaction hash.
+Explorer link.
+Filters:
+XLM.
+USDC.
+Date range.
+Payment status.
+Screen 10 — Live Tip Alerts
+Purpose: Allow creators to display tip notifications during livestreams.
+Required Components:
+Live overlay preview.
+Alert enable/disable toggle.
+Alert title.
+Alert message.
+Supporter name.
+Tip amount.
+Asset icon.
+Alert duration.
+Copy Overlay URL button.
+Test Alert button.
+Example Alert
+"Someone just tipped 5 USDC!"
+The creator should be able to copy an overlay URL and add it as a browser source in compatible streaming software.
+Screen 11 — Public Creator Tipping Page
+Purpose: Provide creators with a standalone shareable tipping page.
+Required Components:
+Creator profile picture.
+Creator name.
+Bio.
+Social links.
+Tipping widget.
+Supported assets.
+Optional thank-you message.
+Example URL structure:
+startip.app/creatorname
+This page should use the same payment engine as the embeddable widget.
+Screen 12 — Settings
+Purpose: Allow creators to manage their account.
+Required Components:
+Connected wallet.
+Receiving address.
+Creator profile.
+Supported assets.
+Notification preferences.
+Widget settings.
+Disconnect Wallet button.
+7. Designer Deliverables
+The designer must provide:
+Complete Figma file covering all 12 screens.
+Desktop and mobile layouts.
+Interactive tipping journey prototype.
+Creator dashboard design.
+Customizable widget component designs.
+Live alert overlay designs.
+Reusable design system.
+Payment confirmation and error states.
+Developer-ready handoff.
+Design Acceptance: A first-time supporter should be able to select an asset, enter an amount, connect a wallet, and understand how to complete a tip without instructions.
+
+PART B — DEVELOPMENT BRIEF
+8. Development Objective
+Build a functional Stellar tipping application with direct XLM and USDC payments, a reusable embeddable widget, a creator dashboard, and live payment alerts.
+The payment engine must use actual Stellar Testnet transactions rather than simulated payment confirmations.
+9. Recommended Technology Stack
+Component
+Technology
+Frontend
+Next.js / React
+Language
+TypeScript
+Styling
+Tailwind CSS
+Blockchain
+Stellar
+Wallet Integration
+Stellar Wallets Kit
+Stellar Transactions
+Stellar SDK
+Backend
+Node.js / Next.js API
+Database
+PostgreSQL / Supabase
+Widget
+JavaScript / TypeScript
+Real-Time Alerts
+WebSockets or Server-Sent Events
+Streaming Overlay
+Browser Source URL
+Hosting
+Vercel
+Network
+Stellar Testnet
+
+Technical Note: StarTip does not require a Soroban smart contract for its core MVP. Direct XLM and USDC tipping can use native Stellar payment operations, reducing development complexity.
+10. Module 1 — Stellar Payment Engine
+Build the core payment infrastructure for sending tips directly to creators.
+Required Functionality
+Generate payment requests.
+Support XLM payments.
+Support Stellar USDC payments.
+Validate recipient addresses.
+Validate asset selection.
+Validate payment amounts.
+Generate unique tip references.
+Construct Stellar payment transactions.
+Request wallet signatures.
+Submit signed transactions.
+Monitor transaction settlement.
+Record confirmed tips.
+Prevent duplicate tip records.
+Trigger alerts after successful payment confirmation.
+Payment Flow
+Supporter selects tip amount and asset.
+Application generates a payment request.
+Application constructs a Stellar transaction.
+Supporter signs using their wallet.
+Transaction is submitted.
+Backend verifies transaction settlement.
+Verified tip is recorded.
+Creator dashboard updates.
+Live notification is triggered.
+Important Requirements
+Tips must be sent directly to the creator's Stellar wallet.
+StarTip must not custody supporter funds.
+USDC payments must use the configured Stellar Testnet asset issuer.
+Recipient wallets must support the selected asset.
+The backend must verify the recipient, asset, amount, and payment reference before crediting a tip.
+Duplicate transaction notifications must not create duplicate tip records.
+11. Module 2 — Embeddable Widget
+Build a reusable tipping widget that creators can embed into external websites.
+Required Features
+Load creator profile.
+Display supported assets.
+Display preset tip amounts.
+Accept custom tip amounts.
+Connect compatible Stellar wallet.
+Review payment.
+Sign and submit transaction.
+Display transaction status.
+Show payment confirmation.
+Integration Methods
+Method 1: iframe
+<iframe
+  src="https://startip.app/embed/creator123"
+  width="360"
+  height="500"
+  title="Tip this creator"
+></iframe>
+Method 2: JavaScript Embed
+<div id="startip-widget"></div>
+
+<script
+  src="https://startip.app/widget.js"
+  data-creator="creator123"
+  data-target="startip-widget">
+</script>
+These are proposed integration interfaces and must be implemented and tested.
+Widget Requirements
+Lightweight loading.
+Responsive sizing.
+Cross-origin compatibility.
+Isolated styling.
+Secure wallet connection.
+Clear error handling.
+Configurable creator branding.
+For iframe integration, wallet signing should use a compatible secure connection flow or open a dedicated checkout window where required by the wallet.
+12. Module 3 — Creator Onboarding & Profiles
+Develop creator registration and profile management.
+Required Functionality
+Connect wallet.
+Verify wallet ownership.
+Create creator profile.
+Select username.
+Add avatar.
+Add bio.
+Configure receiving wallet.
+Select supported assets.
+Update profile.
+Generate public tipping URL.
+The system must prevent unauthorized users from changing a creator's receiving wallet.
+13. Module 4 — Creator Dashboard
+Build a dashboard connected to verified Stellar payment activity.
+Required Functionality
+View confirmed XLM tips.
+View confirmed USDC tips.
+View tip count.
+View recent transactions.
+Filter tip history.
+View optional supporter messages.
+Copy transaction references.
+Access widget settings.
+Access live alert configuration.
+The dashboard should display separate balances or received totals for each asset.
+14. Module 5 — Transaction Monitoring
+Implement backend services to monitor Stellar payments.
+Required Functionality
+Track submitted tip requests.
+Monitor relevant Stellar transactions.
+Verify successful settlement.
+Match payments to tip references.
+Store confirmed tip records.
+Detect duplicate events.
+Update dashboard data.
+Trigger real-time notifications.
+Payment monitoring should rely on verified Stellar transaction data rather than untrusted frontend success messages.
+15. Module 6 — Live Tip Alerts
+Build a lightweight notification system for livestream demonstrations.
+Required Functionality
+Detect newly confirmed tips.
+Generate real-time alert events.
+Display supporter name or anonymous label.
+Display tip amount and asset.
+Display optional supporter message.
+Show alert animation.
+Automatically hide alerts after a configured duration.
+Generate a browser-source overlay URL.
+Support test alerts.
+Overlay Example
+New Tip Received!
+"Alex tipped 10 XLM!"
+"Keep building amazing things!"
+Supporter messages should be treated as untrusted text, escaped before display, and subject to length limits and basic moderation controls.
+16. Module 7 — Widget Configuration
+Build a configuration service that stores:
+Creator widget title.
+Theme.
+Primary color.
+Supported assets.
+Preset tip amounts.
+Custom amount availability.
+Supporter message settings.
+Alert preferences.
+The embedded widget must retrieve the correct creator configuration.
+17. Security Requirements
+Never request or store wallet private keys.
+Require wallet signatures for payments.
+Verify wallet ownership for creator settings.
+Validate receiving addresses.
+Validate asset contracts and issuers.
+Prevent duplicate payment records.
+Verify all payments on-chain.
+Protect creator configuration endpoints.
+Sanitize supporter messages.
+Restrict access to private creator settings.
+Secure livestream overlay URLs.
+Prevent test alerts from appearing as real payments.
+Handle failed and rejected transactions safely.
+
+19. Required Testing Scenarios
+The development team must demonstrate:
+Creator connects a Stellar wallet.
+Creator creates a profile.
+Creator configures a tipping widget.
+Creator generates an embed code.
+Widget loads on an external test website.
+Supporter selects XLM.
+Supporter sends an XLM tip.
+Payment is confirmed on Stellar Testnet.
+Creator dashboard displays the tip.
+Live overlay displays the confirmed tip.
+Supporter sends a USDC tip.
+USDC transaction is verified correctly.
+Invalid amounts are rejected.
+Insufficient balances are handled.
+Rejected wallet signatures show an error.
+Duplicate transaction events do not create duplicate tips.
+Incorrect recipient or asset transactions are not credited.
+Creator can review transaction history.
+20. Out of Scope
+Mainnet deployment.
+Fiat donations.
+Credit card payments.
+Automatic currency conversion.
+Subscription payments.
+NFT tipping rewards.
+Multi-chain support.
+Native mobile applications.
+Creator withdrawals or custody services.
+Advanced analytics.
+Automated tax reporting.
+Full streaming platform integrations.
+Production-grade fraud detection.
+
+PART D — FINAL HANDOVER
+21. Deliverables by Role
+UI/UX Designer
+Complete Figma design.
+12 core screens.
+Responsive layouts.
+Tipping widget designs.
+Creator dashboard.
+Live alert overlay.
+Interactive prototype.
+Design system.
+Frontend Developer
+Landing page.
+Creator onboarding.
+Creator dashboard.
+Tipping widget.
+Payment review interface.
+Transaction history.
+Widget configuration.
+Public creator page.
+Live alert overlay.
+Backend / Stellar Developer
+Stellar payment request engine.
+XLM and USDC transaction support.
+Payment verification.
+Transaction monitoring.
+Creator profile APIs.
+Tip history database.
+Real-time notification service.
+Embed integration.
+Backend security controls.
+22. Definition of Done
+StarTip MVP is complete when a creator can register, connect a Stellar wallet, configure a tipping widget, generate an embed code, and receive confirmed XLM or USDC tips from supporters through a functional website integration.
+The creator must be able to view incoming tips in a dashboard, access verified Stellar transaction records, and display confirmed tip notifications through a browser-based livestream overlay.
+Final Handover Requirements
+Complete Figma design.
+GitHub repository.
+Live Testnet application URL.
+Working embeddable widget.
+Creator dashboard.
+XLM and USDC transaction evidence.
+Live overlay demonstration.
+Technical documentation.
+Test results.
+Recorded end-to-end product demo.
+Final Team Instruction: StarTip must be developed as a working Stellar payment product, not simply a donation page or visual widget.
+The priority is to demonstrate real direct wallet-to-wallet payments, reliable on-chain verification, reusable website embedding, and functional creator notifications within the 30-day development period.
+

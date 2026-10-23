@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Onest', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Red Hat Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-display: 'Anton', Impact, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: #070A1A;
+    color: #FFFFFF;
+    overflow-x: hidden;
+  }
+}
+
+.font-anton {
+  font-family: 'Anton', sans-serif;
+}
+
+.font-mono-code {
+  font-family: 'Red Hat Mono', monospace;
+}
+
+/* Custom subtle scrollbars for embedded dashboard previews */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 106, 138, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 106, 138, 0.45);
+}
